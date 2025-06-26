@@ -1,0 +1,27 @@
+/* Die meisten Styles sind jetzt in styles.css mit Tailwind */
+/* Nur noch component-spezifische Overrides hier */
+
+/* Textarea Styling für bessere Lesbarkeit */
+.textarea-input {
+  background-color: #374151 !important;
+  color: #f8fafc !important;
+  border-radius: 6px;
+}
+
+.textarea-output {
+  background-color: #1f2937 !important;
+  color: #e2e8f0 !important;
+  border-radius: 6px;
+}
+
+/* Responsive Fixes für Mobile */
+@media (max-width: 768px) {
+  .space-x-3 > * {
+    margin-right: 0 !important;
+    margin-bottom: 12px;
+  }
+  
+  .space-x-3 > *:last-child {
+    margin-bottom: 0;
+  }
+}

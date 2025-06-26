@@ -1,0 +1,179 @@
+<div class="dark-bg flex justify-center items-center min-h-screen">
+
+  <div class="container">
+    <!-- Header -->
+<!-- Header -->
+        <div class="text-center mb-12 px-4 ">
+      <div class="inline-block bg-blue-600/20 text-blue-400 px-6 py-3 rounded-full text-4xl font-bold mb-4">Tag Replacer</div>
+      <p  style="text-align: center; margin: auto;"    class="text-slate-400 text-lg max-w-3xl mx-auto leading-relaxed ">
+        Process text with dynamic tag replacement. Use <span class="tag-identifier mono ">&#123;identifier&#125;</span> syntax for tags, and <span class="tag-bracket mono">\&#123;tag&#125;</span> to escape them. Supports ABNF-compliant identifier parsing.
+      </p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <!-- Input Section -->
+      <div>
+      <div class="flex items-center justify-between mb-4 relative">
+          <span class="bg-blue-600/20 text-blue-300 px-3 py-1 rounded-full text-sm font-medium">INPUT TEXT</span>
+          <span class="bg-slate-600/30 text-slate-300 px-3 py-1 rounded-full text-xs font-medium mono absolute right-0">{{ inputText.length }} CHARACTERS</span>
+        </div>
+        
+        <mat-form-field appearance="fill" class="full input-field">
+          <textarea 
+            matInput 
+            rows="16" 
+            [(ngModel)]="inputText" 
+            (input)="onInputChange()"
+            placeholder="It supports \&#123;escaping&#125; and it ignores &#123;unknown&#125; tags"
+            class="mono text-sm textarea-input">">
+          </textarea>
+        </mat-form-field>
+        
+        <!-- Syntax Hints -->
+        <div class="mt-4 space-y-2 text-sm">
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 bg-yellow-400 rounded-full"></span>
+            <span class="syntax-hint">Use <span class="tag-identifier mono">&#123;identifier&#125;</span> for tags (must start with letter)</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+            <span class="syntax-hint">Use <span class="tag-bracket mono">\&#123;tag&#125;</span> to escape tags</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 bg-red-400 rounded-full"></span>
+            <span class="syntax-hint">Use <span class="escape-char mono">\\</span> for literal backslashes</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Output Section -->
+      <div>
+     <div class="flex items-center justify-between mb-4 relative">
+          <span class="bg-blue-600/20 text-blue-300 px-3 py-1 rounded-full text-sm font-medium">OUTPUT TEXT</span>
+          <div class="flex items-center space-x-3 absolute right-0">
+            <span class="bg-slate-600/30 text-slate-300 px-3 py-1 rounded-full text-xs font-medium mono">{{ result.length }} CHARACTERS</span>
+            <button 
+              mat-raised-button 
+              color="primary"
+              (click)="copyResult()"
+              class="copy-btn"
+            >
+              <mat-icon>content_copy</mat-icon>
+              COPY
+            </button>
+          </div>
+        </div>
+        
+        <mat-form-field appearance="fill" class="full input-field">
+          <textarea 
+            matInput 
+            rows="16" 
+            readonly 
+            [value]="result"
+            placeholder="Processed output will appear here..."
+            class="mono text-sm">
+          </textarea>
+        </mat-form-field>
+        
+        <!-- Processing Status -->
+        <div class="mt-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-white">PROCESSING STATUS</h3>
+            <span class="status-good text-white px-3 py-1 rounded-full text-sm flex items-center space-x-2">
+              <mat-icon style="font-size: 16px;">check_circle</mat-icon>
+              <span>All good</span>
+            </span>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div class="card-bg rounded-lg p-4 text-center">
+              <div class="status-number">{{ detectedTags.length }}</div>
+              <div class="text-slate-400 text-sm">TAGS DETECTED</div>
+            </div>
+            <div class="card-bg rounded-lg p-4 text-center">
+              <div class="status-number">{{ tags.length }}</div>
+              <div class="text-slate-400 text-sm">TAGS CONFIGURED</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Tag Replacements Section -->
+    <div class="card-bg rounded-lg p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold text-white">TAG REPLACEMENTS</h2>
+        <span class="tag-count-badge">{{ tags.length }} tags</span>
+      </div>
+      
+      <!-- Add New Tag Input -->
+      <div class="mb-6">
+        <div class="flex space-x-3">
+          <mat-form-field appearance="outline" class="flex-1 add-tag-field">
+            <mat-label>Add new tag identifier</mat-label>
+            <input 
+              matInput 
+              [(ngModel)]="newTagInput"
+              (keyup.enter)="addNewTag()"
+              placeholder="e.g., 'userName'"
+              class="mono"
+            >
+          </mat-form-field>
+          <button 
+            mat-raised-button 
+            color="primary"
+            (click)="addNewTag()"
+            class="add-tag-btn"
+          >
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Tags Container -->
+      <div class="space-y-4" *ngIf="tags.length > 0">
+        <div *ngFor="let tag of tags; let i = index" class="tag-input-container">
+          <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2 flex-shrink-0">
+              <span class="tag-bracket mono text-green-400">&#123;</span>
+              <span class="tag-identifier mono text-yellow-400 font-medium">{{ tag.key }}</span>
+              <span class="tag-bracket mono text-green-400">&#125;</span>
+              <span class="auto-badge">AUTO</span>
+            </div>
+            
+            <mat-form-field appearance="outline" class="flex-1 tag-value-field">
+              <mat-label>Replacement value</mat-label>
+              <input 
+                matInput 
+                [(ngModel)]="tag.value"
+                (input)="onTagValueChange()"
+                placeholder="Enter replacement value"
+              >
+            </mat-form-field>
+            
+            <button 
+              mat-icon-button 
+              color="warn"
+              (click)="removeTag(i)"
+              class="delete-btn"
+              matTooltip="Remove tag"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Empty State -->
+      <div *ngIf="tags.length === 0" class="text-center py-8">
+        <button 
+          mat-stroked-button
+          (click)="focusAddInput()"
+          class="add-btn w-full p-6"
+        >
+          <mat-icon>add</mat-icon>
+          <span class="ml-3">Add your first tag replacement</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
